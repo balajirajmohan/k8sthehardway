@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "name": "k8s-the-hard-way",
+  "builds": [{ "src": "index.html", "use": "@vercel/static" }],
+  "routes": [{ "src": "/(.*)", "dest": "/index.html" }]
+}

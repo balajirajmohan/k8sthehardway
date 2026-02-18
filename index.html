@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>K8s The Hard Way — Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --neon-cyan: #00f0ff;
+  --neon-green: #39ff14;
+  --neon-magenta: #ff006e;
+  --neon-orange: #ff6600;
+  --neon-yellow: #ffe600;
+  --neon-purple: #bf00ff;
+  --neon-blue: #4d7cff;
+  --bg-dark: #06060c;
+  --bg-card: #0d0d16;
+  --bg-card-hover: #131320;
+  --border-dim: #1a1a2e;
+  --border-active: #2a2a4e;
+  --text-primary: #c8c8d8;
+  --text-dim: #5a5a75;
+  --text-bright: #f0f0ff;
+  --glass: rgba(13, 13, 22, 0.85);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,240,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,0.02) 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root { position: relative; z-index: 1; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+
+@keyframes glitch {
+  0%,100% { text-shadow: 2px 0 var(--neon-cyan), -2px 0 var(--neon-magenta); }
+  25% { text-shadow: -2px 0 var(--neon-cyan), 2px 0 var(--neon-magenta); }
+  50% { text-shadow: 2px 2px var(--neon-cyan), -2px -2px var(--neon-magenta); }
+  75% { text-shadow: -2px 2px var(--neon-cyan), 2px -2px var(--neon-magenta); }
+}
+
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 5px currentColor; }
+  50% { box-shadow: 0 0 15px currentColor, 0 0 30px currentColor; }
+}
+
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes blink { 50% { opacity:0; } }
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes borderShift {
+  0%,100% { border-color: var(--neon-cyan); }
+  33% { border-color: var(--neon-magenta); }
+  66% { border-color: var(--neon-green); }
+}
+
+/* === HERO === */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.12;
+  pointer-events: none;
+}
+.orb.a { width: 600px; height: 600px; background: var(--neon-cyan); top: 5%; left: 5%; }
+.orb.b { width: 500px; height: 500px; background: var(--neon-magenta); bottom: 5%; right: 5%; }
+.orb.c { width: 350px; height: 350px; background: var(--neon-green); top: 40%; left: 55%; }
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border: 1px solid var(--neon-green);
+  border-radius: 20px;
+  color: var(--neon-green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  animation: pulse-glow 3s infinite;
+}
+
+.hero-badge::before { content: '●'; animation: blink 1s infinite; }
+
+.hero h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2.8rem, 8vw, 6rem);
+  font-weight: 900;
+  line-height: 1.05;
+  margin-bottom: 0.75rem;
+  animation: glitch 5s infinite;
+  color: var(--text-bright);
+}
+
+.hero h1 .c1 { color: var(--neon-cyan); }
+.hero h1 .c2 { color: var(--neon-magenta); }
+
+.hero-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(0.8rem, 1.8vw, 1.1rem);
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+}
+
+.hero-tag {
+  font-size: 1rem;
+  color: var(--neon-orange);
+  font-weight: 700;
+  margin-bottom: 2.5rem;
+  letter-spacing: 0.5px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat { text-align: center; }
+.stat-val { font-family: 'Orbitron'; font-size: 2.2rem; font-weight: 800; color: var(--neon-cyan); }
+.stat-label { font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+
+.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+.btn {
+  padding: 14px 32px;
+  background: transparent;
+  font-family: 'Orbitron';
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  border: 2px solid;
+}
+
+.btn-c { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+.btn-c:hover { background: var(--neon-cyan); color: var(--bg-dark); box-shadow: 0 0 30px rgba(0,240,255,0.4); }
+.btn-m { border-color: var(--neon-magenta); color: var(--neon-magenta); }
+.btn-m:hover { background: var(--neon-magenta); color: var(--bg-dark); box-shadow: 0 0 30px rgba(255,0,110,0.4); }
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono';
+  font-size: 0.55rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  animation: float 2s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.scroll-hint .arr {
+  width: 16px; height: 16px;
+  border-right: 2px solid var(--neon-cyan);
+  border-bottom: 2px solid var(--neon-cyan);
+  transform: rotate(45deg);
+}
+
+/* === NAV === */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6,6,12,0.92);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 0 2rem;
+}
+
+.nav-in {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 54px;
+}
+
+.nav-logo { font-family: 'Orbitron'; font-weight: 800; font-size: 0.85rem; color: var(--neon-cyan); letter-spacing: 2px; }
+
+.nav-links { display: flex; gap: 0.25rem; list-style: none; overflow-x: auto; }
+
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-family: 'JetBrains Mono';
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.nav-links a:hover, .nav-links a.active { color: var(--neon-cyan); background: rgba(0,240,255,0.06); }
+
+/* === MARQUEE === */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--border-dim);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.marquee-in {
+  display: inline-block;
+  animation: marquee 40s linear infinite;
+}
+
+.marquee-in span {
+  font-family: 'Orbitron';
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-right: 2.5rem;
+}
+
+/* === SECTIONS === */
+.section { max-width: 1400px; margin: 0 auto; padding: 5rem 2rem; }
+
+.sec-hd { text-align: center; margin-bottom: 3.5rem; }
+.sec-tag { font-family: 'JetBrains Mono'; font-size: 0.6rem; letter-spacing: 4px; text-transform: uppercase; color: var(--neon-cyan); margin-bottom: 0.5rem; }
+.sec-title { font-family: 'Orbitron'; font-size: clamp(1.6rem, 3.5vw, 2.5rem); font-weight: 800; color: var(--text-bright); margin-bottom: 0.75rem; }
+.sec-desc { color: var(--text-dim); max-width: 700px; margin: 0 auto; font-size: 0.85rem; line-height: 1.8; }
+
+/* === PHASE CARDS (ROADMAP) === */
+.phase-grid { display: grid; gap: 2rem; }
+
+.phase-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s;
+  cursor: pointer;
+}
+
+.phase-card:hover { border-color: var(--border-active); transform: translateY(-2px); }
+
+.phase-top {
+  padding: 1.75rem 2rem;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.phase-num-wrap {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron';
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--bg-dark);
+}
+
+.phase-info { flex: 1; min-width: 0; }
+
+.phase-category {
+  font-family: 'JetBrains Mono';
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.phase-title {
+  font-family: 'Orbitron';
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 6px;
+}
+
+.phase-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.phase-dur {
+  font-family: 'JetBrains Mono';
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border-dim);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.phase-desc {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+.phase-tools-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* === TOOL BADGE (in phase) === */
+.tool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid;
+  transition: all 0.3s;
+}
+
+.tool-badge img {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.tool-badge.pick-a { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,240,255,0.05); }
+.tool-badge.pick-b { border-color: var(--neon-green); color: var(--neon-green); background: rgba(57,255,20,0.05); }
+
+.phase-expand {
+  font-family: 'JetBrains Mono';
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Expanded details */
+.phase-detail {
+  padding: 0 2rem 1.75rem;
+  display: none;
+}
+
+.phase-card.open .phase-detail { display: block; animation: fadeInUp 0.3s ease-out; }
+
+.phase-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media(max-width:768px) { .phase-detail-grid { grid-template-columns: 1fr; } }
+
+.detail-col h4 {
+  font-family: 'Orbitron';
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-bright);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.topic-list { list-style: none; }
+.topic-list li {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  padding: 4px 0 4px 16px;
+  position: relative;
+  line-height: 1.6;
+}
+.topic-list li::before { content: '▸'; position: absolute; left: 0; color: var(--neon-cyan); }
+
+.poc-box {
+  background: rgba(0,240,255,0.03);
+  border-left: 3px solid var(--neon-cyan);
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  margin-top: 1rem;
+}
+
+.poc-label {
+  font-family: 'JetBrains Mono';
+  font-size: 0.55rem;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.poc-text { font-size: 0.75rem; color: var(--text-primary); line-height: 1.6; }
+
+/* === TOOL CARDS (in detail) === */
+.tool-detail-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:600px) { .tool-detail-cards { grid-template-columns: 1fr; } }
+
+.tool-detail-card {
+  background: rgba(0,240,255,0.02);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: all 0.3s;
+}
+
+.tool-detail-card:hover { border-color: var(--neon-cyan); }
+
+.tdc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.6rem;
+}
+
+.tdc-header img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.05);
+  padding: 2px;
+}
+
+.tdc-name { font-family: 'Orbitron'; font-size: 0.8rem; font-weight: 700; color: var(--text-bright); }
+
+.tdc-desc { font-size: 0.7rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.75rem; }
+
+.tdc-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.tdc-link {
+  font-family: 'JetBrains Mono';
+  font-size: 0.55rem;
+  color: var(--neon-cyan);
+  text-decoration: none;
+  border: 1px solid var(--border-dim);
+  padding: 3px 10px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  letter-spacing: 0.5px;
+}
+
+.tdc-link:hover { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); }
+
+.tdc-via {
+  margin-top: 0.5rem;
+  font-family: 'JetBrains Mono';
+  font-size: 0.5rem;
+  color: var(--neon-orange);
+  letter-spacing: 1px;
+}
+
+/* === RADAR SECTION === */
+.radar-bg {
+  background: linear-gradient(180deg, transparent, rgba(0,240,255,0.015), transparent);
+  border-top: 1px solid var(--border-dim);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.radar-filters {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.radar-btn {
+  padding: 7px 18px;
+  background: transparent;
+  font-family: 'Orbitron';
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+
+.radar-btn.active { background: var(--neon-cyan); color: var(--bg-dark); border-color: var(--neon-cyan); }
+
+.radar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+
+.radar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-card::before { content:''; position: absolute; top:0; left:0; right:0; height: 3px; }
+.radar-card.adopt::before { background: var(--neon-green); }
+.radar-card.trial::before { background: var(--neon-cyan); }
+.radar-card.assess::before { background: var(--neon-orange); }
+
+.radar-card:hover { border-color: var(--neon-cyan); transform: translateY(-3px); box-shadow: 0 8px 40px rgba(0,240,255,0.08); }
+
+.rc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 0.75rem; }
+
+.rc-head img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; background: rgba(255,255,255,0.05); padding: 2px; }
+
+.rc-name { font-family: 'Orbitron'; font-size: 0.85rem; font-weight: 700; color: var(--text-bright); flex: 1; }
+
+.rc-ring {
+  font-family: 'JetBrains Mono';
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.rc-ring.adopt { color: var(--neon-green); border-color: var(--neon-green); }
+.rc-ring.trial { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+.rc-ring.assess { color: var(--neon-orange); border-color: var(--neon-orange); }
+
+.rc-desc { color: var(--text-dim); font-size: 0.73rem; line-height: 1.7; margin-bottom: 0.75rem; }
+
+.rc-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+
+.rc-cat { font-family: 'JetBrains Mono'; font-size: 0.55rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+
+.rc-links { display: flex; gap: 0.4rem; }
+
+.rc-link {
+  font-family: 'JetBrains Mono';
+  font-size: 0.5rem;
+  color: var(--neon-cyan);
+  text-decoration: none;
+  border: 1px solid var(--border-dim);
+  padding: 2px 8px;
+  border-radius: 3px;
+  transition: all 0.3s;
+}
+
+.rc-link:hover { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); }
+
+.rc-via {
+  font-family: 'JetBrains Mono';
+  font-size: 0.5rem;
+  color: var(--neon-orange);
+  margin-top: 0.5rem;
+}
+
+/* === PRINCIPLES === */
+.princ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+
+.princ-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  padding: 1.75rem;
+  text-align: center;
+  transition: all 0.4s;
+}
+
+.princ-card:hover { border-color: var(--neon-cyan); transform: translateY(-3px); }
+
+.princ-icon { font-size: 2.2rem; margin-bottom: 0.75rem; display: block; }
+.princ-title { font-family: 'Orbitron'; font-size: 0.8rem; font-weight: 700; color: var(--text-bright); margin-bottom: 0.5rem; }
+.princ-desc { font-size: 0.73rem; color: var(--text-dim); line-height: 1.7; }
+
+/* === ARCHITECTURE DIAGRAM === */
+.arch-bg {
+  background: linear-gradient(180deg, transparent, rgba(57,255,20,0.01), transparent);
+  border-top: 1px solid var(--border-dim);
+  border-bottom: 1px solid var(--border-dim);
+  overflow: hidden;
+}
+
+.arch-canvas {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+/* Layers */
+.arch-layer {
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid;
+  transition: all 0.4s;
+}
+
+.arch-layer:hover { transform: scale(1.005); }
+
+.arch-layer-label {
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-family: 'Orbitron';
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 2px 12px;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.arch-layer-items {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 0.5rem;
+}
+
+.arch-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.3);
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.arch-node:hover {
+  transform: translateY(-2px);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 4px 20px rgba(0,240,255,0.1);
+}
+
+.arch-node img {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+/* Animated connection lines */
+.arch-connectors {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: -0.5rem 0;
+  position: relative;
+  z-index: 3;
+}
+
+.arch-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--neon-cyan);
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
+.arch-arrow-line {
+  width: 2px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--neon-cyan), transparent);
+  animation: pulse-line 2s ease-in-out infinite;
+}
+
+@keyframes pulse-line {
+  0%,100% { opacity: 0.3; height: 18px; }
+  50% { opacity: 1; height: 22px; }
+}
+
+.arch-arrow-label {
+  font-family: 'JetBrains Mono';
+  font-size: 0.45rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Layer colors */
+.layer-user { border-color: rgba(255,102,0,0.3); background: rgba(255,102,0,0.03); }
+.layer-user .arch-layer-label { background: var(--neon-orange); color: var(--bg-dark); }
+
+.layer-ingress { border-color: rgba(0,240,255,0.3); background: rgba(0,240,255,0.03); }
+.layer-ingress .arch-layer-label { background: var(--neon-cyan); color: var(--bg-dark); }
+
+.layer-gitops { border-color: rgba(191,0,255,0.3); background: rgba(191,0,255,0.03); }
+.layer-gitops .arch-layer-label { background: var(--neon-purple); color: var(--bg-dark); }
+
+.layer-app { border-color: rgba(57,255,20,0.3); background: rgba(57,255,20,0.03); }
+.layer-app .arch-layer-label { background: var(--neon-green); color: var(--bg-dark); }
+
+.layer-platform { border-color: rgba(77,124,255,0.3); background: rgba(77,124,255,0.03); }
+.layer-platform .arch-layer-label { background: var(--neon-blue); color: var(--bg-dark); }
+
+.layer-security { border-color: rgba(255,0,110,0.3); background: rgba(255,0,110,0.03); }
+.layer-security .arch-layer-label { background: var(--neon-magenta); color: var(--bg-dark); }
+
+.layer-observe { border-color: rgba(255,230,0,0.3); background: rgba(255,230,0,0.03); }
+.layer-observe .arch-layer-label { background: var(--neon-yellow); color: var(--bg-dark); }
+
+.layer-infra { border-color: rgba(100,100,140,0.3); background: rgba(100,100,140,0.03); }
+.layer-infra .arch-layer-label { background: #6a6a8a; color: var(--bg-dark); }
+
+/* Animated data flow particles */
+.flow-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: particle-fall linear infinite;
+}
+
+@keyframes particle-fall {
+  0% { transform: translateY(-10px); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { transform: translateY(calc(100vh)); opacity: 0; }
+}
+
+/* AWS cluster badge */
+.aws-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: 1px solid rgba(255,153,0,0.4);
+  border-radius: 20px;
+  color: #ff9900;
+  font-family: 'JetBrains Mono';
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+/* === FOOTER === */
+.footer { border-top: 1px solid var(--border-dim); padding: 3rem 2rem; text-align: center; }
+
+/* === RBAC SECTION === */
+.rbac-bg {
+  background: linear-gradient(180deg, transparent, rgba(255,0,110,0.015), transparent);
+  border-top: 1px solid var(--border-dim);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.rbac-arch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+@media(max-width:900px) { .rbac-arch { grid-template-columns: 1fr; } }
+
+.rbac-flow-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 14px;
+  padding: 2rem;
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.rbac-flow-card:hover { border-color: var(--neon-magenta); transform: translateY(-2px); }
+
+.rbac-flow-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.rbac-flow-card.ns::before { background: var(--neon-cyan); }
+.rbac-flow-card.cl::before { background: var(--neon-magenta); }
+
+.rfc-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+
+.rfc-title {
+  font-family: 'Orbitron';
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 0.5rem;
+}
+
+.rfc-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.rfc-yaml {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'JetBrains Mono';
+  font-size: 0.65rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.rfc-yaml .yk { color: var(--neon-cyan); }
+.rfc-yaml .yv { color: var(--neon-green); }
+.rfc-yaml .yc { color: var(--text-dim); font-style: italic; }
+
+.rbac-pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 2.5rem 0;
+  flex-wrap: wrap;
+}
+
+.rbac-pipe-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 1.5rem;
+}
+
+.rbac-pipe-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+  border: 2px solid;
+  transition: all 0.3s;
+}
+
+.rbac-pipe-icon:hover { animation: pulse-glow 1.5s infinite; }
+
+.rbac-pipe-label {
+  font-family: 'Orbitron';
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.rbac-pipe-sub {
+  font-family: 'JetBrains Mono';
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  max-width: 100px;
+}
+
+.rbac-pipe-arrow {
+  font-size: 1.2rem;
+  color: var(--neon-cyan);
+  margin: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+.rbac-cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.rbac-tip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.4s;
+}
+
+.rbac-tip:hover { border-color: var(--neon-orange); transform: translateY(-2px); }
+
+.rbac-tip-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+
+.rbac-tip-title {
+  font-family: 'Orbitron';
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 0.5rem;
+}
+
+.rbac-tip-desc {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.rbac-default-roles {
+  margin-top: 2.5rem;
+}
+
+.rbac-roles-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+}
+
+.rbac-roles-table th {
+  font-family: 'Orbitron';
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-dim);
+}
+
+.rbac-roles-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-dim);
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.rbac-roles-table tr:hover td { background: rgba(0,240,255,0.02); }
+
+.rbac-roles-table .role-name {
+  font-family: 'JetBrains Mono';
+  font-weight: 700;
+  color: var(--neon-green);
+}
+
+.rbac-cmd-box {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.5rem;
+  font-family: 'JetBrains Mono';
+  font-size: 0.65rem;
+  color: var(--neon-green);
+  line-height: 1.8;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.rbac-cmd-box .cmd-comment { color: var(--text-dim); }
+.footer-text { font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; }
+.footer-text a { color: var(--neon-cyan); text-decoration: none; }
+
+.footer-ascii {
+  font-family: 'JetBrains Mono';
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.08);
+  margin-top: 1.5rem;
+  line-height: 1.3;
+  white-space: pre;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px) {
+  .nav-links { display: none; }
+  .hero-stats { gap: 1.5rem; }
+  .phase-top { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+
+const { useState, useEffect } = React;
+
+// ── LOGO URLS (official favicons / logos via CDN / GitHub) ─────────
+const LOGOS = {
+  cilium: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/cilium/icon/color/cilium-icon-color.svg',
+  istio: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/istio/icon/color/istio-icon-color.svg',
+  kyverno: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/kyverno/icon/color/kyverno-icon-color.svg',
+  kubescape: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/kubescape/icon/color/kubescape-icon-color.svg',
+  containerd: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/containerd/icon/color/containerd-icon-color.svg',
+  podman: 'https://raw.githubusercontent.com/containers/podman/main/logo/podman-logo.svg',
+  argocd: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/argo/icon/color/argo-icon-color.svg',
+  flux: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/flux/icon/color/flux-icon-color.svg',
+  opencost: 'https://raw.githubusercontent.com/opencost/opencost/develop/docs/images/opencost-header-logo.png',
+  kubecost: 'https://www.kubecost.com/images/kubecost-icon.svg',
+  k9s: 'https://raw.githubusercontent.com/derailed/k9s/master/assets/k9s.png',
+  headlamp: 'https://raw.githubusercontent.com/headlamp-k8s/headlamp/main/frontend/src/resources/icon-light.svg',
+  keda: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/keda/icon/color/keda-icon-color.svg',
+  goldilocks: 'https://raw.githubusercontent.com/FairwindsOps/goldilocks/master/img/goldilocks.svg',
+  otel: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/icon/color/opentelemetry-icon-color.svg',
+  grafana: 'https://raw.githubusercontent.com/grafana/grafana/main/public/img/grafana_icon.svg',
+  crossplane: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/crossplane/icon/color/crossplane-icon-color.svg',
+  backstage: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/backstage/icon/color/backstage-icon-color.svg',
+  prometheus: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/prometheus/icon/color/prometheus-icon-color.svg',
+  falco: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/falco/icon/color/falco-icon-color.svg',
+  helm: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/helm/icon/color/helm-icon-color.svg',
+  etcd: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/etcd/icon/color/etcd-icon-color.svg',
+  dotai: 'https://avatars.githubusercontent.com/u/1064715?v=4',
+  kagent: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/kagent/icon/color/kagent-icon-color.svg',
+  rancher: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/rancher/icon/color/rancher-icon-color.svg',
+  kubesphere: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/kubesphere/icon/color/kubesphere-icon-color.svg',
+  aws: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg',
+  nginx: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/nginx/icon/color/nginx-icon-color.svg',
+  certmgr: 'https://raw.githubusercontent.com/cncf/artwork/main/projects/cert-manager/icon/color/cert-manager-icon-color.svg',
+};
+
+// Fallback for broken images
+const IMG = ({src, alt}) => {
+  const [err, setErr] = useState(false);
+  if (err) return <div style={{width:28,height:28,borderRadius:6,background:'rgba(0,240,255,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Orbitron',fontSize:'0.6rem',color:'var(--neon-cyan)',fontWeight:800}}>{alt?.[0]||'?'}</div>;
+  return <img src={src} alt={alt} onError={()=>setErr(true)} />;
+};
+
+// ── PHASE DATA ─────────────────────────────────────────────
+const PHASES = [
+  {
+    id: 1, color: '#00f0ff', category: 'Foundation',
+    title: 'Bare Metal Kubernetes Cluster',
+    duration: '4–6 Weeks',
+    desc: 'Build a multi-node Kubernetes cluster from absolute scratch. Provision VMs, generate TLS certs, bootstrap etcd, configure every control plane component by hand.',
+    toolA: { name: 'etcd', logo: LOGOS.etcd, desc: 'Distributed key-value store — the brain of your K8s cluster. You\'ll bootstrap a 3-node HA etcd cluster manually.', site: 'https://etcd.io', docs: 'https://etcd.io/docs/' },
+    toolB: { name: 'containerd', logo: LOGOS.containerd, desc: 'Industry-standard container runtime. Lightweight, CNCF graduated, and what every major cloud uses under the hood.', site: 'https://containerd.io', docs: 'https://github.com/containerd/containerd/blob/main/docs/getting-started.md' },
+    topics: ['Provision VMs (Vagrant / Multipass / bare EC2)', 'Generate TLS certificates for every component (cfssl)', 'Bootstrap 3-node HA etcd cluster', 'Configure kube-apiserver, controller-manager, scheduler', 'Set up kubelet & kube-proxy on worker nodes', 'Configure Container Runtime Interface (containerd)', 'Deploy CoreDNS for cluster DNS', 'Smoke test: deploy nginx, verify DNS & networking'],
+    poc: 'Deploy a 3-master + 3-worker cluster on local VMs. Break components intentionally and observe failure modes. Document every certificate in the chain.'
+  },
+  {
+    id: 2, color: '#39ff14', category: 'Network CNI & Service Mesh',
+    title: 'Networking Deep Dive',
+    duration: '3–4 Weeks',
+    desc: 'Master Kubernetes networking ground-up. eBPF-powered CNI with Cilium, service mesh with Istio, network policies, mTLS, and traffic management.',
+    toolA: { name: 'Cilium', logo: LOGOS.cilium, desc: 'eBPF-powered CNI providing networking, security & observability. Sidecarless service mesh with kernel-level performance. CNCF Graduated.', site: 'https://cilium.io', docs: 'https://docs.cilium.io' },
+    toolB: { name: 'Istio', logo: LOGOS.istio, desc: 'The most feature-complete service mesh. mTLS, traffic management, observability, and canary deployments with fine-grained control.', site: 'https://istio.io', docs: 'https://istio.io/latest/docs/' },
+    topics: ['CNI plugin deep dive — Cilium architecture & eBPF', 'Pod-to-Pod, Pod-to-Service, External-to-Service flows', 'Network Policies — deny-all-first approach', 'Hubble for network observability & flow visualization', 'Istio service mesh — sidecar vs ambient mode', 'mTLS between all services automatically', 'Traffic management: canary, blue-green, circuit breaking', 'Ingress controllers & Gateway API'],
+    poc: 'Deploy Cilium as CNI with Hubble observability. Implement strict deny-all network policies. Add Istio for service mesh and compare latency with/without sidecar injection.'
+  },
+  {
+    id: 3, color: '#ff006e', category: 'Security Hardening & RBAC',
+    title: 'Zero-Trust Security',
+    duration: '3–4 Weeks',
+    desc: 'Lock down your cluster with defense-in-depth. Policy-as-code with Kyverno, security posture management with Kubescape, RBAC, Pod Security Standards, and supply chain security.',
+    toolA: { name: 'Kyverno', logo: LOGOS.kyverno, desc: 'Kubernetes-native policy engine. Write policies in pure YAML — no Rego needed. Validate, mutate, generate, and clean up resources.', site: 'https://kyverno.io', docs: 'https://kyverno.io/docs/', via: 'Viktor Farcic / DevOps Toolkit' },
+    toolB: { name: 'Kubescape', logo: LOGOS.kubescape, desc: 'Open-source K8s security platform by ARMO. Risk analysis, compliance frameworks (NSA, MITRE), image scanning, and runtime detection.', site: 'https://kubescape.io', docs: 'https://kubescape.io/docs/', via: 'Viktor Farcic / DevOps Toolkit' },
+    topics: ['RBAC deep dive — Roles, ClusterRoles, Bindings', 'Pod Security Standards (Restricted / Baseline / Privileged)', 'etcd encryption at rest — AES-CBC & KMS providers', 'Policy-as-code with Kyverno — validate, mutate, generate', 'Security posture scanning with Kubescape (NSA, MITRE)', 'Image vulnerability scanning in CI/CD pipeline', 'Supply chain security — Sigstore, Cosign, SBOM', 'Certificate management with cert-manager + Let\'s Encrypt'],
+    poc: 'Build a zero-trust cluster: Kyverno enforces Pod Security, Kubescape scans for compliance violations, etcd is encrypted, and all images are signed with Cosign.'
+  },
+  {
+    id: 4, color: '#bf00ff', category: 'GitOps & CI/CD',
+    title: 'ArgoCD & Progressive Delivery',
+    duration: '3–4 Weeks',
+    desc: 'Implement GitOps with ArgoCD as the single source of truth. Progressive delivery with Argo Rollouts. Compare with Flux for pull-based reconciliation.',
+    toolA: { name: 'ArgoCD', logo: LOGOS.argocd, desc: 'Declarative GitOps CD for Kubernetes. App-of-Apps pattern, multi-cluster support, SSO, RBAC, and beautiful UI. The de facto GitOps standard.', site: 'https://argoproj.github.io/cd/', docs: 'https://argo-cd.readthedocs.io', via: 'Viktor Farcic / DevOps Toolkit' },
+    toolB: { name: 'Flux', logo: LOGOS.flux, desc: 'CNCF Graduated GitOps toolkit. Pull-based reconciliation, Helm controller, image automation, and multi-tenancy built-in.', site: 'https://fluxcd.io', docs: 'https://fluxcd.io/docs/' },
+    topics: ['GitOps principles — declarative, versioned, automated', 'ArgoCD setup — App-of-Apps pattern', 'Multi-environment management (dev / staging / prod)', 'Helm chart development & Kustomize overlays', 'Progressive delivery — canary & blue-green with Argo Rollouts', 'Flux architecture — source, kustomize, helm controllers', 'Secrets in GitOps — Sealed Secrets & External Secrets Operator', 'Multi-cluster GitOps with ArgoCD ApplicationSets'],
+    poc: 'Set up ArgoCD managing 3 environments with App-of-Apps. Deploy a microservice with Argo Rollouts canary strategy. Set up Flux on a second cluster and compare workflows.'
+  },
+  {
+    id: 5, color: '#ff6600', category: 'Container Runtimes',
+    title: 'Runtime Deep Dive',
+    duration: '2–3 Weeks',
+    desc: 'Understand container runtimes beyond Docker. Production-grade containerd for K8s, rootless Podman for development. OCI standards, image building, and runtime security.',
+    toolA: { name: 'containerd', logo: LOGOS.containerd, desc: 'The default K8s container runtime. CNCF Graduated, minimal footprint, snapshotter-based storage, and native CRI integration.', site: 'https://containerd.io', docs: 'https://github.com/containerd/containerd/blob/main/docs/getting-started.md' },
+    toolB: { name: 'Podman', logo: LOGOS.podman, desc: 'Daemonless, rootless container engine. Docker CLI compatible but with better security defaults. Great for local dev and CI.', site: 'https://podman.io', docs: 'https://docs.podman.io' },
+    topics: ['OCI runtime specification deep dive', 'containerd architecture — shims, snapshots, content store', 'CRI (Container Runtime Interface) internals', 'Podman — rootless containers & daemonless architecture', 'Image building: Buildah, Kaniko, BuildKit comparison', 'Multi-arch image builds for ARM + x86', 'Runtime security: gVisor, Kata Containers sandboxing', 'Container image best practices & slim images'],
+    poc: 'Build the same app image with Docker, Buildah, and Kaniko. Compare image layers and sizes. Run containerd and Podman side-by-side and benchmark startup times.'
+  },
+  {
+    id: 6, color: '#ffe600', category: 'FinOps & Cost Management',
+    title: 'Kubernetes FinOps',
+    duration: '2–3 Weeks',
+    desc: 'Get full cost visibility into your clusters. Open-source cost monitoring with OpenCost, enterprise-grade allocation with Kubecost. Implement chargeback, showback, and optimization.',
+    toolA: { name: 'OpenCost', logo: LOGOS.opencost, desc: 'CNCF-backed open-source Kubernetes cost monitoring. Vendor-neutral, real-time allocation by namespace/pod/label. The industry standard foundation.', site: 'https://www.opencost.io', docs: 'https://www.opencost.io/docs/' },
+    toolB: { name: 'Kubecost', logo: LOGOS.kubecost, desc: 'Built on OpenCost with enterprise features. Multi-cluster views, cloud billing reconciliation, savings recommendations, and budget alerts.', site: 'https://www.kubecost.com', docs: 'https://docs.kubecost.com' },
+    topics: ['FinOps principles — Inform, Optimize, Operate', 'OpenCost deployment & Prometheus integration', 'Cost allocation by namespace, deployment, label', 'Kubecost enterprise — multi-cluster & billing reconciliation', 'Resource right-sizing recommendations', 'Showback & chargeback workflows for teams', 'Orphaned resource detection (PVCs, load balancers)', 'FinOps culture — cost-awareness as shared responsibility'],
+    poc: 'Deploy OpenCost on your cluster. Visualize per-namespace costs. Set up Kubecost with budget alerts. Identify top 3 cost savings opportunities and action them.'
+  },
+  {
+    id: 7, color: '#4d7cff', category: 'Dashboard & Cluster Management',
+    title: 'K8s Dashboards',
+    duration: '1–2 Weeks',
+    desc: 'Terminal power users meet web UI advocates. K9s for lightning-fast terminal workflows, Headlamp as the official CNCF web dashboard successor.',
+    toolA: { name: 'K9s', logo: LOGOS.k9s, desc: 'Terminal UI for Kubernetes. Keyboard-driven, real-time, ultra-fast. Navigate pods, stream logs, exec into containers, port-forward — all without leaving the terminal.', site: 'https://k9scli.io', docs: 'https://k9scli.io/topics/commands/' },
+    toolB: { name: 'Headlamp', logo: LOGOS.headlamp, desc: 'CNCF Sandbox project. The official successor to Kubernetes Dashboard. Modern web UI, plugin architecture, OIDC auth, multi-cluster support.', site: 'https://headlamp.dev', docs: 'https://headlamp.dev/docs/latest/' },
+    topics: ['K9s — installation, navigation, custom skins', 'K9s plugins & aliases for productivity', 'Headlamp — in-cluster deployment via Helm', 'Headlamp plugins & Kubescape integration', 'RBAC-aware dashboards — least privilege access', 'Multi-cluster context switching strategies', 'Custom dashboards for team-specific views', 'Dashboard security — OIDC, proxy, network policies'],
+    poc: 'Deploy Headlamp in your cluster with OIDC auth. Configure K9s with custom skins and aliases. Compare workflows: create a deployment, debug a crashloop, and read logs using both tools.'
+  },
+  {
+    id: 8, color: '#00f0ff', category: 'HPA, VPA & Autoscaling',
+    title: 'Intelligent Autoscaling',
+    duration: '2–3 Weeks',
+    desc: 'Go beyond basic HPA. Event-driven autoscaling with KEDA, VPA recommendation intelligence with Goldilocks. Scale on custom metrics, external events, and real demand.',
+    toolA: { name: 'KEDA', logo: LOGOS.keda, desc: 'Kubernetes Event-Driven Autoscaling. Scale based on Kafka lag, SQS depth, Prometheus queries, cron, or 60+ event sources. CNCF Graduated.', site: 'https://keda.sh', docs: 'https://keda.sh/docs/' },
+    toolB: { name: 'Goldilocks', logo: LOGOS.goldilocks, desc: 'VPA recommendation dashboard by Fairwinds. Analyzes workloads and recommends optimal CPU/memory requests and limits. "Just right" sizing.', site: 'https://github.com/FairwindsOps/goldilocks', docs: 'https://goldilocks.docs.fairwinds.com' },
+    topics: ['HPA deep dive — CPU, memory, custom metrics', 'VPA modes — Off, Initial, Auto, Recreate', 'KEDA ScaledObjects & ScaledJobs architecture', 'KEDA triggers: Prometheus, Kafka, RabbitMQ, Cron, AWS SQS', 'Goldilocks — VPA recommendations dashboard', 'Combining HPA + VPA safely (the tricky parts)', 'Cluster Autoscaler vs Karpenter for node scaling', 'Load testing with k6 to validate autoscaling'],
+    poc: 'Deploy KEDA with a Prometheus scaler — auto-scale based on request rate. Install Goldilocks and analyze VPA recommendations for all workloads. Load test with k6 and watch scaling.'
+  },
+  {
+    id: 9, color: '#39ff14', category: 'Observability & Distributed Tracing',
+    title: 'Full Observability Stack',
+    duration: '3–4 Weeks',
+    desc: 'Unified telemetry with OpenTelemetry. Metrics, logs, and traces flowing into the Grafana stack (Prometheus, Loki, Tempo). SLO-based alerting that doesn\'t suck.',
+    toolA: { name: 'OpenTelemetry', logo: LOGOS.otel, desc: 'Vendor-neutral observability framework. Auto-instrument apps, collect metrics/logs/traces, export to any backend. The CNCF industry standard.', site: 'https://opentelemetry.io', docs: 'https://opentelemetry.io/docs/' },
+    toolB: { name: 'Grafana Stack', logo: LOGOS.grafana, desc: 'Prometheus for metrics, Loki for logs, Tempo for traces, Grafana for dashboards. The open-source observability powerhouse.', site: 'https://grafana.com/oss/', docs: 'https://grafana.com/docs/' },
+    topics: ['OpenTelemetry SDK — auto & manual instrumentation', 'OTEL Collector — receivers, processors, exporters pipeline', 'Prometheus — scraping, PromQL, recording rules', 'Grafana Loki — log aggregation without indexing', 'Grafana Tempo — distributed tracing at scale', 'RED method & golden signals dashboards', 'SLI/SLO/SLA definition & error budgets', 'Alert fatigue elimination — routing, grouping, silencing'],
+    poc: 'Deploy a microservice app with OTEL auto-instrumentation. Pipe metrics → Prometheus, logs → Loki, traces → Tempo. Build a Grafana dashboard with SLO-based alerts. Trace a request end-to-end.'
+  },
+  {
+    id: 10, color: '#ff006e', category: 'Platform Engineering & Day-2 Ops',
+    title: 'Internal Developer Platform',
+    duration: '4–6 Weeks',
+    desc: 'Build your IDP with Crossplane as the universal control plane and Backstage as the developer portal. Day-2 operations: upgrades, backup, multi-cluster, and AI-powered ops.',
+    toolA: { name: 'Crossplane', logo: LOGOS.crossplane, desc: 'Universal cloud control plane. Manage any cloud resource as a Kubernetes custom resource. Compose infrastructure APIs for developer self-service.', site: 'https://www.crossplane.io', docs: 'https://docs.crossplane.io', via: 'Viktor Farcic / Upbound' },
+    toolB: { name: 'Backstage', logo: LOGOS.backstage, desc: 'Open-source developer portal by Spotify. Service catalog, software templates, TechDocs, and plugin ecosystem. The IDP frontend standard.', site: 'https://backstage.io', docs: 'https://backstage.io/docs/', via: 'Viktor Farcic / KubeCon 2025' },
+    topics: ['Internal Developer Platform design principles', 'Crossplane — Providers, Managed Resources, Compositions', 'Crossplane XRDs for self-service infrastructure APIs', 'Backstage — service catalog & software templates', 'Backstage plugins: ArgoCD, Kubernetes, TechDocs', 'Cluster upgrades — zero-downtime, component-by-component', 'Backup & disaster recovery with Velero', 'Multi-cluster orchestration patterns', 'AI-powered ops: Dot AI MCP for K8s (experimental)', 'Kagent — agentic AI for cluster operations'],
+    poc: 'Build a minimal IDP: Crossplane provisions cloud resources via XRDs, Backstage provides service catalog with golden path templates. Simulate a failure and recover with Velero.'
+  },
+  {
+    id: 11, color: '#ff6600', category: 'Multi-Cluster Management',
+    title: 'Unified Control Plane',
+    duration: '3–4 Weeks',
+    desc: 'Manage multiple Kubernetes clusters from a single pane of glass. Provision, monitor, and govern fleets of clusters across AWS regions with centralized RBAC, policies, and lifecycle management.',
+    toolA: { name: 'Rancher', logo: LOGOS.rancher, desc: 'Open-source multi-cluster management platform by SUSE. Provision clusters via RKE2/K3s, import EKS/GKE/AKS, unified RBAC, catalogs, and fleet management at scale.', site: 'https://www.rancher.com', docs: 'https://ranchermanager.docs.rancher.com' },
+    toolB: { name: 'KubeSphere', logo: LOGOS.kubesphere, desc: 'CNCF-certified open-source container platform. Multi-cluster federation, built-in DevOps pipelines, service mesh, multi-tenancy, and observability — all from one UI.', site: 'https://kubesphere.io', docs: 'https://kubesphere.io/docs/' },
+    topics: ['Why multi-cluster: blast radius, compliance, geo-locality', 'Rancher installation — HA deployment on RKE2', 'Rancher Fleet — GitOps-based multi-cluster deployment', 'Importing existing clusters (EKS, self-managed) into Rancher', 'Centralized RBAC & authentication (OIDC, SAML, LDAP)', 'KubeSphere multi-cluster federation setup', 'KubeSphere DevOps pipelines & app store', 'Multi-tenancy patterns — workspace isolation', 'Cluster lifecycle management — upgrades, scaling, decommission', 'Comparing: Rancher vs KubeSphere vs Karmada vs Portainer'],
+    poc: 'Deploy Rancher on a management cluster. Import 2 downstream clusters (one EKS, one kubeadm). Set up Fleet for GitOps deployments across both. Deploy KubeSphere on a third cluster and compare the UX, RBAC model, and DevOps workflow.'
+  },
+];
+
+// ── RADAR TOOLS ────────────────────────────────────────────
+const RADAR = [
+  { name: 'Cilium', ring: 'adopt', cat: 'CNI & Networking', logo: LOGOS.cilium, desc: 'eBPF-powered networking, security & observability. Sidecarless service mesh with kernel-level performance.', site: 'https://cilium.io', docs: 'https://docs.cilium.io' },
+  { name: 'ArgoCD', ring: 'adopt', cat: 'GitOps', logo: LOGOS.argocd, desc: 'Declarative GitOps CD for Kubernetes. App-of-Apps, multi-cluster, and progressive delivery with Rollouts.', site: 'https://argoproj.github.io/cd/', docs: 'https://argo-cd.readthedocs.io' },
+  { name: 'OpenTelemetry', ring: 'adopt', cat: 'Observability', logo: LOGOS.otel, desc: 'Vendor-neutral observability framework for metrics, logs, and traces. The CNCF industry standard.', site: 'https://opentelemetry.io', docs: 'https://opentelemetry.io/docs/' },
+  { name: 'Kyverno', ring: 'trial', cat: 'Security & Policy', logo: LOGOS.kyverno, desc: 'Kubernetes-native policy engine. Pure YAML policies for validation, mutation, generation, and cleanup.', site: 'https://kyverno.io', docs: 'https://kyverno.io/docs/', via: 'Viktor Farcic' },
+  { name: 'KEDA', ring: 'adopt', cat: 'Autoscaling', logo: LOGOS.keda, desc: 'Event-driven autoscaling. Scale on Kafka, SQS, Prometheus, cron, and 60+ sources. CNCF Graduated.', site: 'https://keda.sh', docs: 'https://keda.sh/docs/' },
+  { name: 'Crossplane', ring: 'trial', cat: 'Platform Engineering', logo: LOGOS.crossplane, desc: 'Universal cloud control plane. Manage infrastructure as K8s custom resources.', site: 'https://www.crossplane.io', docs: 'https://docs.crossplane.io', via: 'Viktor Farcic / Upbound' },
+  { name: 'Kubescape', ring: 'trial', cat: 'Security & Scanning', logo: LOGOS.kubescape, desc: 'K8s security posture management. NSA/MITRE compliance, image scanning, runtime detection.', site: 'https://kubescape.io', docs: 'https://kubescape.io/docs/', via: 'Viktor Farcic' },
+  { name: 'OpenCost', ring: 'trial', cat: 'FinOps', logo: LOGOS.opencost, desc: 'CNCF open-source K8s cost monitoring. Real-time allocation by namespace, pod, and label.', site: 'https://www.opencost.io', docs: 'https://www.opencost.io/docs/' },
+  { name: 'Headlamp', ring: 'assess', cat: 'Dashboard', logo: LOGOS.headlamp, desc: 'CNCF Sandbox. Official K8s Dashboard successor. Modern web UI with plugin architecture.', site: 'https://headlamp.dev', docs: 'https://headlamp.dev/docs/latest/' },
+  { name: 'Backstage', ring: 'trial', cat: 'Developer Portal', logo: LOGOS.backstage, desc: 'Open-source developer portal. Service catalog, software templates, and plugin ecosystem.', site: 'https://backstage.io', docs: 'https://backstage.io/docs/', via: 'Viktor Farcic' },
+  { name: 'Kagent', ring: 'assess', cat: 'AI Ops', logo: LOGOS.kagent, desc: 'CNCF Sandbox. Agentic AI for K8s operations — diagnose, remediate, and manage via LLMs.', site: 'https://kagent.dev', docs: 'https://kagent.dev/docs/' },
+  { name: 'Dot AI', ring: 'assess', cat: 'AI Ops', logo: LOGOS.dotai, desc: 'MCP server for AI-driven K8s deployments. Intelligent resource discovery, manifest generation, and pattern learning.', site: 'https://github.com/vfarcic/dot-ai', docs: 'https://github.com/vfarcic/dot-ai#readme', via: 'Viktor Farcic' },
+  { name: 'Rancher', ring: 'adopt', cat: 'Multi-Cluster Mgmt', logo: LOGOS.rancher, desc: 'Open-source multi-cluster K8s management. Provision via RKE2/K3s, unified RBAC, Fleet GitOps, and app catalogs at scale.', site: 'https://www.rancher.com', docs: 'https://ranchermanager.docs.rancher.com' },
+  { name: 'KubeSphere', ring: 'trial', cat: 'Multi-Cluster Mgmt', logo: LOGOS.kubesphere, desc: 'CNCF-certified open-source K8s platform. Multi-cluster federation, DevOps pipelines, multi-tenancy, and full observability.', site: 'https://kubesphere.io', docs: 'https://kubesphere.io/docs/' },
+];
+
+const PRINCIPLES = [
+  { icon: '🔧', title: 'No Managed Clusters', desc: 'We build from scratch. No EKS, GKE, or AKS. Understand every component before abstracting it away.' },
+  { icon: '🔐', title: 'Security First', desc: 'Every phase includes security. RBAC, encryption, policies, runtime detection — baked in from day one.' },
+  { icon: '🧪', title: 'POC Driven', desc: 'Each phase ends with a hands-on proof of concept. Build it or it didn\'t happen.' },
+  { icon: '📖', title: 'Open Source Only', desc: 'Every tool is open source. Community-driven, vendor-neutral, CNCF battle-tested.' },
+  { icon: '💀', title: 'Break Things', desc: 'Chaos engineering mindset. Kill pods, break networks, corrupt etcd. Learn failure before production does.' },
+  { icon: '📡', title: 'Radar Driven', desc: 'We track the CNCF ecosystem and community radar for cutting-edge tools. Assess → Trial → Adopt.' },
+];
+
+const MARQUEE_ITEMS = ['CILIUM','ARGOCD','KYVERNO','KUBESCAPE','KEDA','CROSSPLANE','BACKSTAGE','OPENCOST','K9S','HEADLAMP','OPENTELEMETRY','GRAFANA','PROMETHEUS','FLUX','PODMAN','GOLDILOCKS','KUBECOST','RANCHER','KUBESPHERE','KAGENT','DOT AI','eBPF'];
+
+// ── COMPONENTS ─────────────────────────────────────────────
+
+function Hero() {
+  return (
+    <section className="hero" id="home">
+      <div className="orb a"/><div className="orb b"/><div className="orb c"/>
+      <div className="hero-badge">LET'S MASTER THE BASICS</div>
+      <h1><span className="c1">K8s</span> THE<br/><span className="c2">HARD</span> WAY</h1>
+      <p className="hero-sub">// bare metal. open source. from scratch.</p>
+      <p className="hero-tag">⚡ A hardcore Kubernetes learning collective — build from zero to production</p>
+      <div className="hero-stats">
+        <div className="stat"><div className="stat-val">11</div><div className="stat-label">Phases</div></div>
+        <div className="stat"><div className="stat-val">34</div><div className="stat-label">Weeks</div></div>
+        <div className="stat"><div className="stat-val">24+</div><div className="stat-label">Tools</div></div>
+        <div className="stat"><div className="stat-val">∞</div><div className="stat-label">POCs</div></div>
+      </div>
+      <div className="hero-btns">
+        <a href="#roadmap" className="btn btn-c">View Roadmap</a>
+        <a href="#radar" className="btn btn-m">Explore Radar</a>
+      </div>
+      <div className="scroll-hint"><span>Scroll</span><div className="arr"/></div>
+    </section>
+  );
+}
+
+function Marquee() {
+  const items = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
+  const colors = ['var(--neon-cyan)','var(--neon-green)','var(--neon-magenta)','var(--neon-orange)','var(--neon-yellow)','var(--neon-purple)','var(--neon-blue)'];
+  return (
+    <div className="marquee">
+      <div className="marquee-in">
+        {items.map((t,i) => <span key={i} style={{color:colors[i%colors.length]}}>{t} ◆ </span>)}
+      </div>
+    </div>
+  );
+}
+
+function PhaseCard({ phase }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`phase-card ${open?'open':''}`} onClick={()=>setOpen(!open)}>
+      <div className="phase-top">
+        <div className="phase-num-wrap" style={{background: phase.color}}>
+          {String(phase.id).padStart(2,'0')}
+        </div>
+        <div className="phase-info">
+          <div className="phase-category" style={{color: phase.color}}>{phase.category}</div>
+          <h3 className="phase-title">{phase.title}</h3>
+          <div className="phase-meta"><span className="phase-dur">⏱ {phase.duration}</span></div>
+          <p className="phase-desc">{phase.desc}</p>
+          <div className="phase-tools-row">
+            <span className="tool-badge pick-a"><IMG src={phase.toolA.logo} alt={phase.toolA.name}/>{phase.toolA.name}</span>
+            <span className="tool-badge pick-b"><IMG src={phase.toolB.logo} alt={phase.toolB.name}/>{phase.toolB.name}</span>
+          </div>
+          <div className="phase-expand">{open ? '▲ collapse' : '▼ expand details'}</div>
+        </div>
+      </div>
+
+      {open && (
+        <div className="phase-detail" style={{display:'block'}}>
+          <div className="tool-detail-cards">
+            <ToolDetailCard tool={phase.toolA} color={phase.color} />
+            <ToolDetailCard tool={phase.toolB} color={phase.color} />
+          </div>
+          <div className="phase-detail-grid">
+            <div className="detail-col">
+              <h4>Topics Covered</h4>
+              <ul className="topic-list">
+                {phase.topics.map((t,i) => <li key={i}>{t}</li>)}
+              </ul>
+            </div>
+            <div className="detail-col">
+              <div className="poc-box">
+                <div className="poc-label">🧪 POC Challenge</div>
+                <p className="poc-text">{phase.poc}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ToolDetailCard({ tool, color }) {
+  return (
+    <div className="tool-detail-card" onClick={e=>e.stopPropagation()}>
+      <div className="tdc-header">
+        <IMG src={tool.logo} alt={tool.name}/>
+        <span className="tdc-name">{tool.name}</span>
+      </div>
+      <p className="tdc-desc">{tool.desc}</p>
+      <div className="tdc-links">
+        <a href={tool.site} target="_blank" rel="noopener" className="tdc-link">↗ Website</a>
+        <a href={tool.docs} target="_blank" rel="noopener" className="tdc-link">📖 Docs</a>
+      </div>
+      {tool.via && <div className="tdc-via">📡 Recommended by {tool.via}</div>}
+    </div>
+  );
+}
+
+function RoadmapSection() {
+  return (
+    <section className="section" id="roadmap">
+      <div className="sec-hd">
+        <div className="sec-tag">// the journey</div>
+        <h2 className="sec-title">Roadmap</h2>
+        <p className="sec-desc">Eleven intensive phases. Two curated tools per category. From bare metal to multi-cluster management. Click any phase to expand.</p>
+      </div>
+      <div className="phase-grid">
+        {PHASES.map(p => <PhaseCard key={p.id} phase={p}/>)}
+      </div>
+    </section>
+  );
+}
+
+function ArchitectureSection() {
+  // Animated particles
+  const particles = Array.from({length: 20}, (_,i) => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 8,
+    duration: 6 + Math.random() * 6,
+    color: ['var(--neon-cyan)','var(--neon-green)','var(--neon-magenta)','var(--neon-orange)'][i%4],
+  }));
+
+  const Arrow = ({labels}) => (
+    <div className="arch-connectors">
+      {labels.map((l,i)=>(
+        <div key={i} className="arch-arrow">
+          <div className="arch-arrow-line"/>
+          <span style={{fontSize:'0.7rem'}}>▼</span>
+          <span className="arch-arrow-label">{l}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <section className="arch-bg" id="architecture">
+      <div className="section">
+        <div className="sec-hd">
+          <div className="sec-tag">// the big picture</div>
+          <h2 className="sec-title">Production Architecture</h2>
+          <p className="sec-desc">This is what your cluster looks like once all 11 phases are complete. Every layer is open-source, battle-tested, and deployed on AWS.</p>
+          <div style={{textAlign:'center',marginTop:'1rem'}}>
+            <span className="aws-badge">☁️ Deployed on AWS (EC2 / VPC)</span>
+          </div>
+        </div>
+
+        <div className="arch-canvas">
+          {/* Floating particles */}
+          <div className="flow-particles">
+            {particles.map((p,i) => (
+              <div key={i} className="particle" style={{
+                left: p.left+'%',
+                background: p.color,
+                animationDelay: p.delay+'s',
+                animationDuration: p.duration+'s',
+              }}/>
+            ))}
+          </div>
+
+          {/* L1: Users / Developers */}
+          <div className="arch-layer layer-user">
+            <div className="arch-layer-label">Users & Developers</div>
+            <div className="arch-layer-items">
+              <div className="arch-node">👨‍💻 Developers</div>
+              <div className="arch-node">🤖 CI/CD Pipeline</div>
+              <div className="arch-node"><IMG src={LOGOS.k9s} alt="K9s"/>K9s Terminal</div>
+              <div className="arch-node"><IMG src={LOGOS.headlamp} alt="Headlamp"/>Headlamp UI</div>
+              <div className="arch-node"><IMG src={LOGOS.backstage} alt="Backstage"/>Backstage Portal</div>
+            </div>
+          </div>
+
+          <Arrow labels={['HTTPS','GitOps Push','kubectl']}/>
+
+          {/* L2: Ingress & Gateway */}
+          <div className="arch-layer layer-ingress">
+            <div className="arch-layer-label">Ingress & Load Balancing</div>
+            <div className="arch-layer-items">
+              <div className="arch-node">⚖️ AWS ALB / NLB</div>
+              <div className="arch-node"><IMG src={LOGOS.certmgr} alt="cert-manager"/>cert-manager + TLS</div>
+              <div className="arch-node"><IMG src={LOGOS.istio} alt="Istio"/>Istio Gateway</div>
+              <div className="arch-node"><IMG src={LOGOS.cilium} alt="Cilium"/>Cilium Ingress</div>
+            </div>
+          </div>
+
+          <Arrow labels={['mTLS','Traffic Routing','L7 Policy']}/>
+
+          {/* L3: GitOps & Delivery */}
+          <div className="arch-layer layer-gitops">
+            <div className="arch-layer-label">GitOps & Continuous Delivery</div>
+            <div className="arch-layer-items">
+              <div className="arch-node"><IMG src={LOGOS.argocd} alt="ArgoCD"/>ArgoCD</div>
+              <div className="arch-node"><IMG src={LOGOS.argocd} alt="Rollouts"/>Argo Rollouts</div>
+              <div className="arch-node"><IMG src={LOGOS.flux} alt="Flux"/>Flux</div>
+              <div className="arch-node"><IMG src={LOGOS.helm} alt="Helm"/>Helm Charts</div>
+              <div className="arch-node">🔐 Sealed Secrets</div>
+            </div>
+          </div>
+
+          <Arrow labels={['Deploy','Sync','Rollback']}/>
+
+          {/* L4: Application Workloads */}
+          <div className="arch-layer layer-app">
+            <div className="arch-layer-label">Application Workloads</div>
+            <div className="arch-layer-items">
+              <div className="arch-node"><IMG src={LOGOS.containerd} alt="containerd"/>containerd Runtime</div>
+              <div className="arch-node">🐳 Microservices</div>
+              <div className="arch-node"><IMG src={LOGOS.keda} alt="KEDA"/>KEDA Autoscaler</div>
+              <div className="arch-node"><IMG src={LOGOS.goldilocks} alt="Goldilocks"/>Goldilocks VPA</div>
+              <div className="arch-node">⚙️ CronJobs & Workers</div>
+            </div>
+          </div>
+
+          <Arrow labels={['Network Policy','eBPF','Service Mesh']}/>
+
+          {/* L5: Platform & Networking */}
+          <div className="arch-layer layer-platform">
+            <div className="arch-layer-label">Platform & Networking</div>
+            <div className="arch-layer-items">
+              <div className="arch-node"><IMG src={LOGOS.cilium} alt="Cilium"/>Cilium CNI + eBPF</div>
+              <div className="arch-node"><IMG src={LOGOS.istio} alt="Istio"/>Istio Service Mesh</div>
+              <div className="arch-node"><IMG src={LOGOS.crossplane} alt="Crossplane"/>Crossplane IaC</div>
+              <div className="arch-node"><IMG src={LOGOS.etcd} alt="etcd"/>etcd (Encrypted)</div>
+              <div className="arch-node">🖧 CoreDNS</div>
+            </div>
+          </div>
+
+          <Arrow labels={['Scan','Enforce','Detect']}/>
+
+          {/* L6: Security */}
+          <div className="arch-layer layer-security">
+            <div className="arch-layer-label">Security & Policy</div>
+            <div className="arch-layer-items">
+              <div className="arch-node"><IMG src={LOGOS.kyverno} alt="Kyverno"/>Kyverno Policies</div>
+              <div className="arch-node"><IMG src={LOGOS.kubescape} alt="Kubescape"/>Kubescape Scan</div>
+              <div className="arch-node"><IMG src={LOGOS.falco} alt="Falco"/>Falco Runtime</div>
+              <div className="arch-node">🔒 RBAC + PSS</div>
+              <div className="arch-node"><IMG src={LOGOS.certmgr} alt="cert-manager"/>cert-manager</div>
+            </div>
+          </div>
+
+          <Arrow labels={['Metrics','Logs','Traces']}/>
+
+          {/* L7: Observability */}
+          <div className="arch-layer layer-observe">
+            <div className="arch-layer-label">Observability & FinOps</div>
+            <div className="arch-layer-items">
+              <div className="arch-node"><IMG src={LOGOS.otel} alt="OTEL"/>OpenTelemetry</div>
+              <div className="arch-node"><IMG src={LOGOS.prometheus} alt="Prometheus"/>Prometheus</div>
+              <div className="arch-node"><IMG src={LOGOS.grafana} alt="Grafana"/>Grafana + Loki + Tempo</div>
+              <div className="arch-node"><IMG src={LOGOS.opencost} alt="OpenCost"/>OpenCost</div>
+              <div className="arch-node"><IMG src={LOGOS.kubecost} alt="Kubecost"/>Kubecost</div>
+            </div>
+          </div>
+
+          <Arrow labels={['Manage','Provision','Govern']}/>
+
+          {/* L8: Multi-Cluster Control Plane */}
+          <div className="arch-layer layer-infra">
+            <div className="arch-layer-label">Multi-Cluster Management & Infrastructure</div>
+            <div className="arch-layer-items">
+              <div className="arch-node"><IMG src={LOGOS.rancher} alt="Rancher"/>Rancher</div>
+              <div className="arch-node"><IMG src={LOGOS.kubesphere} alt="KubeSphere"/>KubeSphere</div>
+              <div className="arch-node">☁️ AWS EC2 (Masters)</div>
+              <div className="arch-node">☁️ AWS EC2 (Workers)</div>
+              <div className="arch-node">🗄️ AWS EBS (Storage)</div>
+              <div className="arch-node">🌐 AWS VPC / Subnets</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RBACSection() {
+  const [activeTab, setActiveTab] = useState('arch');
+
+  const BEST_PRACTICES = [
+    { icon: '🎯', title: 'Least Privilege Always', desc: 'Grant only the minimum permissions needed. Use namespace-scoped Roles over ClusterRoles. Never use wildcards (*) in rules — they grant access to future resource types too.' },
+    { icon: '🚫', title: 'Never Bind cluster-admin', desc: 'The cluster-admin ClusterRole gives God-mode access. Never bind it to users or service accounts. Create specific ClusterRoles for admin tasks instead.' },
+    { icon: '📛', title: 'No Wildcards in Rules', desc: 'Wildcards (*) in apiGroups, resources, or verbs are a security landmine. Always specify exact resources and verbs explicitly.' },
+    { icon: '🔍', title: 'Audit Regularly', desc: 'Run kubectl auth can-i --list periodically. Prune unused Roles and RoleBindings. Stale permissions from deleted service accounts are a common attack vector.' },
+    { icon: '🤖', title: 'Service Accounts per App', desc: 'Every workload gets its own ServiceAccount. Never use the default SA. Disable token auto-mounting unless explicitly needed.' },
+    { icon: '📝', title: 'GitOps Your RBAC', desc: 'Store all Roles and Bindings in Git. Use ArgoCD/Flux to sync them. Kyverno can enforce RBAC policies as admission webhooks.' },
+  ];
+
+  const DEFAULT_ROLES = [
+    { name: 'cluster-admin', scope: 'Cluster', desc: 'Full access to all resources in all namespaces. Superuser — handle with extreme care.' },
+    { name: 'admin', scope: 'Namespace', desc: 'Full access within a namespace. Can manage Roles and RoleBindings but not ResourceQuotas.' },
+    { name: 'edit', scope: 'Namespace', desc: 'Read/write access to most resources. Cannot view or modify Roles, RoleBindings, or Secrets.' },
+    { name: 'view', scope: 'Namespace', desc: 'Read-only access to most resources. Cannot view Secrets, Roles, or RoleBindings.' },
+  ];
+
+  return (
+    <section className="rbac-bg" id="rbac">
+      <div className="section">
+        <div className="sec-hd">
+          <div className="sec-tag">// understanding authorization</div>
+          <h2 className="sec-title">Kubernetes RBAC Deep Dive</h2>
+          <p className="sec-desc">RBAC controls who can do what in your cluster. Four objects — Role, ClusterRole, RoleBinding, ClusterRoleBinding — form the entire authorization model. Master these and you control the kingdom.</p>
+        </div>
+
+        {/* Request Flow Pipeline */}
+        <div style={{textAlign:'center',marginBottom:'0.5rem'}}>
+          <span className="sec-tag">// api request authorization flow</span>
+        </div>
+        <div className="rbac-pipeline">
+          <div className="rbac-pipe-step">
+            <div className="rbac-pipe-icon" style={{borderColor:'var(--neon-orange)',color:'var(--neon-orange)'}}>👤</div>
+            <div className="rbac-pipe-label">User</div>
+            <div className="rbac-pipe-sub">kubectl / API call</div>
+          </div>
+          <div className="rbac-pipe-arrow">→</div>
+          <div className="rbac-pipe-step">
+            <div className="rbac-pipe-icon" style={{borderColor:'var(--neon-cyan)',color:'var(--neon-cyan)'}}>🔑</div>
+            <div className="rbac-pipe-label">AuthN</div>
+            <div className="rbac-pipe-sub">Certs, tokens, OIDC</div>
+          </div>
+          <div className="rbac-pipe-arrow">→</div>
+          <div className="rbac-pipe-step">
+            <div className="rbac-pipe-icon" style={{borderColor:'var(--neon-magenta)',color:'var(--neon-magenta)'}}>🛡️</div>
+            <div className="rbac-pipe-label">AuthZ</div>
+            <div className="rbac-pipe-sub">RBAC rules check</div>
+          </div>
+          <div className="rbac-pipe-arrow">→</div>
+          <div className="rbac-pipe-step">
+            <div className="rbac-pipe-icon" style={{borderColor:'var(--neon-yellow)',color:'var(--neon-yellow)'}}>🧪</div>
+            <div className="rbac-pipe-label">Admission</div>
+            <div className="rbac-pipe-sub">Kyverno / webhooks</div>
+          </div>
+          <div className="rbac-pipe-arrow">→</div>
+          <div className="rbac-pipe-step">
+            <div className="rbac-pipe-icon" style={{borderColor:'var(--neon-green)',color:'var(--neon-green)'}}>✅</div>
+            <div className="rbac-pipe-label">etcd</div>
+            <div className="rbac-pipe-sub">Resource persisted</div>
+          </div>
+        </div>
+
+        {/* The 4 RBAC Objects */}
+        <div style={{textAlign:'center',marginBottom:'1rem',marginTop:'2rem'}}>
+          <span className="sec-tag">// the four rbac objects</span>
+        </div>
+        <div className="rbac-arch">
+          {/* Role */}
+          <div className="rbac-flow-card ns">
+            <div className="rfc-icon">📋</div>
+            <div className="rfc-title">Role (Namespace-Scoped)</div>
+            <div className="rfc-desc">Defines a set of permissions within a single namespace. This is your go-to for least-privilege access. Most of your RBAC should be Roles, not ClusterRoles.</div>
+            <div className="rfc-yaml"><span className="yk">apiVersion:</span> <span className="yv">rbac.authorization.k8s.io/v1</span>{"\n"}<span className="yk">kind:</span> <span className="yv">Role</span>{"\n"}<span className="yk">metadata:</span>{"\n"}  <span className="yk">namespace:</span> <span className="yv">production</span>{"\n"}  <span className="yk">name:</span> <span className="yv">pod-reader</span>{"\n"}<span className="yk">rules:</span>{"\n"}<span className="yv">- apiGroups: [""]</span>{"\n"}  <span className="yv">resources: ["pods", "pods/log"]</span>{"\n"}  <span className="yv">verbs: ["get", "watch", "list"]</span></div>
+          </div>
+
+          {/* ClusterRole */}
+          <div className="rbac-flow-card cl">
+            <div className="rfc-icon">🌐</div>
+            <div className="rfc-title">ClusterRole (Cluster-Wide)</div>
+            <div className="rfc-desc">Grants permissions across ALL namespaces or to cluster-scoped resources like Nodes and PersistentVolumes. Use sparingly — prefer Roles for tighter blast radius.</div>
+            <div className="rfc-yaml"><span className="yk">apiVersion:</span> <span className="yv">rbac.authorization.k8s.io/v1</span>{"\n"}<span className="yk">kind:</span> <span className="yv">ClusterRole</span>{"\n"}<span className="yk">metadata:</span>{"\n"}  <span className="yk">name:</span> <span className="yv">node-reader</span>{"\n"}<span className="yk">rules:</span>{"\n"}<span className="yv">- apiGroups: [""]</span>{"\n"}  <span className="yv">resources: ["nodes"]</span>{"\n"}  <span className="yv">verbs: ["get", "watch", "list"]</span></div>
+          </div>
+
+          {/* RoleBinding */}
+          <div className="rbac-flow-card ns">
+            <div className="rfc-icon">🔗</div>
+            <div className="rfc-title">RoleBinding</div>
+            <div className="rfc-desc">Binds a Role (or ClusterRole) to subjects — users, groups, or service accounts — within a specific namespace. Even a ClusterRole bound via RoleBinding is scoped to one namespace.</div>
+            <div className="rfc-yaml"><span className="yk">apiVersion:</span> <span className="yv">rbac.authorization.k8s.io/v1</span>{"\n"}<span className="yk">kind:</span> <span className="yv">RoleBinding</span>{"\n"}<span className="yk">metadata:</span>{"\n"}  <span className="yk">namespace:</span> <span className="yv">production</span>{"\n"}  <span className="yk">name:</span> <span className="yv">read-pods-binding</span>{"\n"}<span className="yk">subjects:</span>{"\n"}<span className="yv">- kind: ServiceAccount</span>{"\n"}  <span className="yv">name: monitoring-sa</span>{"\n"}  <span className="yv">namespace: production</span>{"\n"}<span className="yk">roleRef:</span>{"\n"}  <span className="yv">kind: Role</span>{"\n"}  <span className="yv">name: pod-reader</span>{"\n"}  <span className="yv">apiGroup: rbac.authorization.k8s.io</span></div>
+          </div>
+
+          {/* ClusterRoleBinding */}
+          <div className="rbac-flow-card cl">
+            <div className="rfc-icon">⛓️</div>
+            <div className="rfc-title">ClusterRoleBinding</div>
+            <div className="rfc-desc">Binds a ClusterRole to subjects across the entire cluster. This is the most powerful binding — a misconfigured ClusterRoleBinding is the #1 K8s security mistake.</div>
+            <div className="rfc-yaml"><span className="yk">apiVersion:</span> <span className="yv">rbac.authorization.k8s.io/v1</span>{"\n"}<span className="yk">kind:</span> <span className="yv">ClusterRoleBinding</span>{"\n"}<span className="yk">metadata:</span>{"\n"}  <span className="yk">name:</span> <span className="yv">sre-node-access</span>{"\n"}<span className="yk">subjects:</span>{"\n"}<span className="yv">- kind: Group</span>{"\n"}  <span className="yv">name: sre-team</span>{"\n"}  <span className="yv">apiGroup: rbac.authorization.k8s.io</span>{"\n"}<span className="yk">roleRef:</span>{"\n"}  <span className="yv">kind: ClusterRole</span>{"\n"}  <span className="yv">name: node-reader</span>{"\n"}  <span className="yv">apiGroup: rbac.authorization.k8s.io</span></div>
+          </div>
+        </div>
+
+        {/* Default ClusterRoles Table */}
+        <div className="rbac-default-roles">
+          <div style={{textAlign:'center',marginBottom:'1rem'}}>
+            <span className="sec-tag">// kubernetes default clusterroles</span>
+          </div>
+          <table className="rbac-roles-table">
+            <thead>
+              <tr>
+                <th>ClusterRole</th>
+                <th>Scope</th>
+                <th>What It Grants</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DEFAULT_ROLES.map((r,i) => (
+                <tr key={i}>
+                  <td><span className="role-name">{r.name}</span></td>
+                  <td>{r.scope}</td>
+                  <td>{r.desc}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Useful kubectl commands */}
+        <div style={{textAlign:'center',marginBottom:'0.75rem',marginTop:'2.5rem'}}>
+          <span className="sec-tag">// essential rbac kubectl commands</span>
+        </div>
+        <div className="rbac-cmd-box">
+          <span className="cmd-comment"># Check what YOU can do in a namespace</span>{"\n"}
+          kubectl auth can-i --list -n production{"\n\n"}
+          <span className="cmd-comment"># Check if a specific user can create deployments</span>{"\n"}
+          kubectl auth can-i create deployments --as=alice -n staging{"\n\n"}
+          <span className="cmd-comment"># List all roles and bindings in a namespace</span>{"\n"}
+          kubectl get roles,rolebindings -n production{"\n\n"}
+          <span className="cmd-comment"># List all cluster-wide roles and bindings</span>{"\n"}
+          kubectl get clusterroles,clusterrolebindings{"\n\n"}
+          <span className="cmd-comment"># Describe a specific role to see its rules</span>{"\n"}
+          kubectl describe role pod-reader -n production{"\n\n"}
+          <span className="cmd-comment"># Find all subjects bound to cluster-admin (DANGER AUDIT)</span>{"\n"}
+          kubectl get clusterrolebindings -o json | jq '.items[] | select(.roleRef.name=="cluster-admin") | .subjects'
+        </div>
+
+        {/* Best Practices */}
+        <div style={{textAlign:'center',marginBottom:'1rem',marginTop:'3rem'}}>
+          <span className="sec-tag">// battle-tested best practices</span>
+        </div>
+        <div className="rbac-cards-row">
+          {BEST_PRACTICES.map((bp,i) => (
+            <div key={i} className="rbac-tip">
+              <div className="rbac-tip-icon">{bp.icon}</div>
+              <h4 className="rbac-tip-title">{bp.title}</h4>
+              <p className="rbac-tip-desc">{bp.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RadarSection() {
+  const [filter, setFilter] = useState('all');
+  const rings = ['all','adopt','trial','assess'];
+  const filtered = filter === 'all' ? RADAR : RADAR.filter(t => t.ring === filter);
+
+  return (
+    <section className="radar-bg" id="radar">
+      <div className="section">
+        <div className="sec-hd">
+          <div className="sec-tag">// cncf ecosystem radar</div>
+          <h2 className="sec-title">Tool Radar</h2>
+          <p className="sec-desc">Curated from the CNCF landscape, community recommendations, and DevOps Toolkit insights. Adopt → Battle-tested. Trial → Ready for real use. Assess → Worth exploring.</p>
+        </div>
+        <div className="radar-filters">
+          {rings.map(r => (
+            <button key={r} className={`radar-btn ${filter===r?'active':''}`} onClick={()=>setFilter(r)}>{r}</button>
+          ))}
+        </div>
+        <div className="radar-grid">
+          {filtered.map(t => (
+            <div key={t.name} className={`radar-card ${t.ring}`}>
+              <div className="rc-head">
+                <IMG src={t.logo} alt={t.name}/>
+                <span className="rc-name">{t.name}</span>
+                <span className={`rc-ring ${t.ring}`}>{t.ring}</span>
+              </div>
+              <p className="rc-desc">{t.desc}</p>
+              <div className="rc-foot">
+                <span className="rc-cat">{t.cat}</span>
+                <div className="rc-links">
+                  <a href={t.site} target="_blank" rel="noopener" className="rc-link">↗ Site</a>
+                  <a href={t.docs} target="_blank" rel="noopener" className="rc-link">📖 Docs</a>
+                </div>
+              </div>
+              {t.via && <div className="rc-via">📡 {t.via}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PrinciplesSection() {
+  return (
+    <section className="section" id="principles">
+      <div className="sec-hd">
+        <div className="sec-tag">// our philosophy</div>
+        <h2 className="sec-title">Principles</h2>
+        <p className="sec-desc">This isn't a tutorial group. This is a hardcore engineering collective. These are the rules.</p>
+      </div>
+      <div className="princ-grid">
+        {PRINCIPLES.map((p,i) => (
+          <div key={i} className="princ-card">
+            <span className="princ-icon">{p.icon}</span>
+            <h3 className="princ-title">{p.title}</h3>
+            <p className="princ-desc">{p.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Nav() {
+  const [active, setActive] = useState('home');
+  useEffect(() => {
+    const h = () => {
+      for (const id of ['principles','radar','rbac','architecture','roadmap','home']) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= 100) { setActive(id); break; }
+      }
+    };
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  return (
+    <nav className="nav">
+      <div className="nav-in">
+        <div className="nav-logo">K8S://HARDWAY</div>
+        <div className="nav-links">
+          {[{id:'home',l:'Home'},{id:'roadmap',l:'Roadmap'},{id:'architecture',l:'Architecture'},{id:'rbac',l:'RBAC'},{id:'radar',l:'Radar'},{id:'principles',l:'Principles'}].map(n => (
+            <a key={n.id} href={`#${n.id}`} className={active===n.id?'active':''}>{n.l}</a>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <p className="footer-text">
+        Built for the obsessed · Powered by the <a href="https://www.cncf.io/" target="_blank" rel="noopener">CNCF ecosystem</a> · Inspired by production outages and sleepless nights
+      </p>
+      <pre className="footer-ascii">{`  ┌───────────────────────────────────────────┐
+  │  $ kubectl get nodes                      │
+  │  NAME       STATUS   ROLES    VERSION      │
+  │  master-1   Ready    control  v1.31.0      │
+  │  master-2   Ready    control  v1.31.0      │
+  │  worker-1   Ready    <none>   v1.31.0      │
+  │  worker-2   Ready    <none>   v1.31.0      │
+  └───────────────────────────────────────────┘`}</pre>
+    </footer>
+  );
+}
+
+function App() {
+  return (
+    <>
+      <Hero/>
+      <Nav/>
+      <Marquee/>
+      <RoadmapSection/>
+      <ArchitectureSection/>
+      <RBACSection/>
+      <RadarSection/>
+      <PrinciplesSection/>
+      <Footer/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
